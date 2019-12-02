@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RLJ | ASTARTE MEDICAL CODE TEST</title>
+
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">  
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+
+<style>
+
+.vehlink, .eventlink {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#currentvehiclecontainer, #currentserviceidcontainer {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.instructions {
+    text-align: center;
+    margin: 0 auto;
+    font-weight: bold;
+}
+
+#contentcontainer, #othercontentcontainer {
+    width: 85%;
+    text-align: center;
+    margin: 0 auto;
+}
+
+#eventscontainer, #eventdetailscontainer {
+    width: 45%;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.hiddencontent {
+    display: none;
+}
+</style>
+</head>
+<body>
+
+<div id="contentcontainer">
+
+<div class="instructions">
+Click one of the vehicle names to view its service events.
+</div>
+
+<table id="vehicletable" class="display compact nowrap">
+   <caption>Vehicles</caption>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>HP</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+
+<div id="currentvehiclecontainer">
+<strong>Current vehicle: </strong><span id="currentvehiclename">-</span>
+</div>
+
+</div>
+
+<div id="othercontentcontainer">
+
+<div id="currentserviceeventidcontainer" class="hiddencontent">
+
+<div class="instructions" style="text-align:left">
+Click one of the service event ids to view its details.
+</div>
+
+<div id="eventscontainer" style="float:left; margin-right: 20px">
+<table id="serviceeventstable" class="display compact nowrap hiddencontent">
+   <caption>Service Events</caption>
+    <thead>
+        <tr>
+            <th>EventId</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+<strong>Current service event: </strong><span id="currentserviceeventid">-</span>
+</div>
+
+</div>
+
+<div id="eventdetailscontainer" style="float:left">
+<table id="servicesperformedtable" class="display compact nowrap hiddencontent">
+   <caption>Services Performed</caption>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Hours</th>
+            <th>Price per Hour</th>
+            <th>Total cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+<br>
+<br>
+<table id="eventsitemstable" class="display compact nowrap hiddencontent">
+   <caption>Service Items</caption>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Units</th>
+            <th>Price per unit</th>
+            <th>Total cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+
+</div>
+<script>
+// pulled from https://us-central1-codingtest-121b0.cloudfunctions.net/testData (the "vehicles" item in response body)
+var testData = [{"name":"car_A","type":"car","created":"2019-11-23 5:30a","horsepower":175,"serviceEvents":[{"eventId":1,"date":"2019-11-25 5:30a","servicesPerformed":[{"serviceType":{"name":"wash","pricePerHour":20},"hours":2},{"serviceType":{"name":"detail","pricePerHour":18},"hours":1.5}],"itemsSold":{"items":[{"itemType":{"name":"wiper blades","pricePerUnit":20},"units":8},{"itemType":{"name":"air fresheners","pricePerUnit":24},"units":1}],"freebies":[{"fType":{"name":"sticker"},"count":2}]}},{"eventId":2,"date":"2019-11-25 8:30a","servicesPerformed":[{"serviceType":{"name":"wash","pricePerHour":20},"hours":5},{"serviceType":{"name":"detail","pricePerHour":18},"hours":1}],"itemsSold":{"items":[{"itemType":{"name":"wiper blades","pricePerUnit":20},"units":10},{"itemType":{"name":"air fresheners","pricePerUnit":24},"units":3}],"freebies":[{"fType":{"name":"sticker"},"count":5}]}}],"odometerReadings":[{"date":"2019-11-23 5:30a","miles":700},{"date":"2019-11-24 5:30a","miles":750},{"date":"2019-11-25 5:30a","miles":800}]},{"name":"truck_A","type":"truck","created":"2019-10-23 5:30a","horsepower":185,"serviceEvents":[{"eventId":1,"date":"2019-10-25 5:30a","servicesPerformed":[{"serviceType":{"name":"wash","pricePerHour":20},"hours":2},{"serviceType":{"name":"wax","pricePerHour":12},"hours":1.5}],"itemsSold":{"items":[{"itemType":{"name":"wiper blades x-treme","pricePerUnit":24},"units":8},{"itemType":{"name":"air fresheners","pricePerUnit":24},"units":1}],"freebies":[{"fType":{"name":"sticker"},"count":2}]}},{"eventId":2,"date":"2019-10-25 8:30a","servicesPerformed":[{"serviceType":{"name":"wash","pricePerHour":20},"hours":5},{"serviceType":{"name":"detail","pricePerHour":18},"hours":1}],"itemsSold":{"items":[{"itemType":{"name":"wiper blades x-treme","pricePerUnit":24},"units":13},{"itemType":{"name":"air fresheners","pricePerUnit":24},"units":2}],"freebies":[{"fType":{"name":"sticker"},"count":5}]}}],"odometerReadings":[{"date":"2019-10-23 5:30a","miles":700},{"date":"2019-10-24 5:30a","miles":750},{"date":"2019-10-25 5:30a","miles":800}]}];
+
+var vehicles = [];
+
+// for each name in vehicles, this contains an object
+// whose key is the vehicle name, and
+// whose value is the basic vehicle data
+var vehiclesData = {};
+
+// for each name in vehicles, this contains an object
+// whose key is the vehicle name, and 
+// whose value is an array of (flattened) serviceEvents for that vehicle
+var serviceEventsByVehicleName = {};
+
+// for each service event, this contains an object
+// whose key is <vehicle.name-serviceEvent.eventId>, and
+// whose value is a list of (flattened) services performed
+var servicesPerformedByVehicleAndServiceEvent = {};
+
+// for each service event, this contains an object
+// whose key is <vehicle.name-serviceEvent.eventId>, and
+// whose value is a list of (flattened) items sold and freebies (an item with pricePerUnit=0)
+var itemsByVehicleAndServiceEvent = {};
+
+
+// helper function for parsing vehicles from our data set
+function ensureVehicleInList(v) {
+    const vName = v["name"];
+    if (!vehicles.includes(vName)) { 
+        vehicles.push(vName);
+        vehiclesData[vName] = { created: v["created"], horsepower: v["horsepower"], type: v["type"] };
+        serviceEventsByVehicleName[vName] = [];
+    }
+}
+
+
+// parse the data set to extract and flatten nested child objects, to simplify use with our DataTables
+testData.forEach(vehicle => {
+    const vName = vehicle["name"];
+    ensureVehicleInList(vehicle);
+    const thisVehicleServiceEvents = vehicle["serviceEvents"];
+
+    thisVehicleServiceEvents.forEach(serviceEvent => {
+        const eventId = serviceEvent["eventId"];
+
+        const newServiceEvent = { eventId, date: serviceEvent["date"] };
+        serviceEventsByVehicleName[vName].push(newServiceEvent);
+
+        const thisServiceEventServicesPerformed = serviceEvent["servicesPerformed"];
+        const thisServiceEventItems = serviceEvent["itemsSold"]["items"];
+        const thisServiceEventFreebies = serviceEvent["itemsSold"]["freebies"];
+
+        const vehicleServiceEventKey = "" + vName + '-' + eventId;
+        servicesPerformedByVehicleAndServiceEvent[vehicleServiceEventKey] = [];
+        itemsByVehicleAndServiceEvent[vehicleServiceEventKey] = [];
+
+        thisServiceEventServicesPerformed.forEach(sp => {
+            const name = sp["serviceType"]["name"];
+            const pricePerHour = sp["serviceType"]["pricePerHour"];
+            const hours = sp["hours"];
+            const totalCost = pricePerHour * hours;
+
+            const newServicePerformed = { name, pricePerHour, hours, totalCost };
+            servicesPerformedByVehicleAndServiceEvent[vehicleServiceEventKey].push(newServicePerformed);
+        });
+
+        thisServiceEventItems.forEach(si => {
+            const name = si["itemType"]["name"];
+            const pricePerUnit = si["itemType"]["pricePerUnit"];
+            const units = si["units"];
+            const totalCost = units * pricePerUnit;
+
+            const newServiceItem = { name, pricePerUnit, units, totalCost };
+            itemsByVehicleAndServiceEvent[vehicleServiceEventKey].push(newServiceItem);
+        });
+
+        thisServiceEventFreebies.forEach(f => {
+            const name = f["fType"]["name"];
+            const pricePerUnit = 0;
+            const units = f["count"];
+            const totalCost = 0.00;
+
+            const newFreebie = { name, pricePerUnit, units, totalCost };
+            itemsByVehicleAndServiceEvent[vehicleServiceEventKey].push(newFreebie);
+        });
+    });
+}); 
+
+// clear the event detail tables; this occurs when a new vehicle is clicked/selected
+function clearDisplayedData() {
+    if ($.fn.dataTable.isDataTable("#servicesperformedtable")) {
+        servicesPerformedTable.destroy();
+    }
+
+    if ($.fn.dataTable.isDataTable("#eventsitemstable")) {
+        serviceItemsTable.destroy();
+    }
+
+    $("#currentserviceeventid").html('');
+    $("#currentserviceeventidcontainer").addClass("hiddencontent");
+}
+
+// when a service event get clicked/selected, update the event detail tables with its data
+function updateDisplayedEventData() {
+    if (currentServiceId) {
+        $("#currentserviceeventid").html(currentServiceId);
+
+        const vehicleServiceEventKey = currentVehicleName + '-' + currentServiceId;
+
+        $('#servicesperformedtable').removeClass("hiddencontent");
+
+        servicesPerformedTable = $('#servicesperformedtable').DataTable({
+            data: servicesPerformedByVehicleAndServiceEvent[vehicleServiceEventKey],
+            columns: [
+               { data: 'name', title: 'Name'},
+               { data: 'pricePerHour', title: 'Price per Hour' },
+               { data: 'hours', title: 'Hours' },
+               { data: 'totalCost', title: 'Total cost' }
+            ],
+            columnDefs: [
+               { targets: '_all', className: 'dt-body-center' }
+            ],
+            paging: false,
+            destroy: true,
+            searching: false,
+            info: false,
+        });
+
+        $('#eventsitemstable').removeClass("hiddencontent");
+
+        serviceItemsTable = $('#eventsitemstable').DataTable({
+            data: itemsByVehicleAndServiceEvent[vehicleServiceEventKey],
+            columns: [
+               { data: 'name', title: 'Name'},
+               { data: 'pricePerUnit', title: 'Price per unit' },
+               { data: 'units', title: 'Units' },
+               { data: 'totalCost', title: 'Total cost' }
+            ],
+            columnDefs: [
+               { targets: '_all', className: 'dt-body-center' }
+            ],
+            paging: false,
+            destroy: true,
+            searching: false,
+            info: false,
+        });
+    }
+}
+
+
+// when a vehicle name gets clicked, update the service events listing to display its respective events in the table
+function updateDisplayedEvents() {
+    clearDisplayedData();
+
+    if ("" != currentVehicleName) {
+        $("#currentvehiclename").html(currentVehicleName);
+
+        $("#serviceeventstable").removeClass("hiddencontent");
+        $("#currentserviceeventidcontainer").removeClass("hiddencontent");
+
+        $("#serviceeventstable").DataTable({
+            data: serviceEventsByVehicleName[currentVehicleName],
+            columns: [
+                { data: 'eventId', title: 'EventId', render: function(data, type, row, meta){ return serviceEventLink(data); }},
+                { data: 'date', title: 'Date' },
+            ],
+            columnDefs: [
+                { targets: '_all', className: 'dt-body-center' }
+            ], 
+            paging: false,
+            destroy: true,
+            searching: false,
+            info: false,
+        });
+    }
+
+    $(".eventlink").on("click", function(){
+        currentServiceId = $(this).data()["vehicleEventId"];
+        updateDisplayedEventData();
+    });
+}
+
+function vehicleLink(linkText) {
+    return `<div class="vehlink" data-vehicle-name="${linkText}">${linkText}</div>`;
+}
+
+function serviceEventLink(linkText) {
+    return `<div class="eventlink" data-vehicle-event-id="${linkText}">${linkText}</div>`;
+}
+
+var servicesPerformedTable, serviceItemsTable;
+
+var currentVehicleName = "";
+var currentServiceId = null;
+
+
+// display our vehicles to start
+$(document).ready(function() {
+    $('#vehicletable').DataTable({
+        data: testData,
+        columns: [
+           { data: 'name', title: 'Name', render: function(data, type, row, meta){ return vehicleLink(data); }},
+           { data: 'type', title: 'Type' },
+           { data: 'horsepower', title: 'HP' },
+           { data: 'created', title: 'Created' }
+        ],
+        columnDefs: [
+           { targets: '_all', className: 'dt-body-center' }
+        ],
+        paging: false,
+        info: false,
+    });
+
+    $(".vehlink").on("click", function(){
+        currentVehicleName = $(this).data()["vehicleName"];
+        updateDisplayedEvents();        
+    });
+});
+
+
+</script>
+</body>
+</html>
